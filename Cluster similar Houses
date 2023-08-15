@@ -1,0 +1,43 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+url = "https://raw.githubusercontent.com/edyoda/data-science-complete-tutorial/master/Data/house_rental_data.csv"
+data = pd.read_csv(url)
+
+# Drop irrelevant columns
+data.drop(['Unnamed: 0', 'Type', 'Region'], axis=1, inplace=True)
+
+# Standardize the features
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(data)
+# Elbow method to find the optimal number of clusters (K)
+inertia = []
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(scaled_data)
+    inertia.append(kmeans.inertia_)
+
+# Plot the Elbow curve
+plt.plot(range(1, 11), inertia, marker='o')
+plt.xlabel('Number of Clusters (K)')
+plt.ylabel('Inertia')
+plt.title('Elbow Method for Optimal K')
+plt.show()
+# Choose the optimal K value based on the Elbow curve (e.g., let's say K=4)
+optimal_k = 4
+kmeans = KMeans(n_clusters=optimal_k, random_state=42)
+cluster_labels = kmeans.fit_predict(scaled_data)
+
+# Add cluster labels to the original dataset
+data['Cluster'] = cluster_labels
+
+# Display the dataset with cluster labels
+print(data.head())
+# Plot clusters based on two features (e.g., Sqft and Bedroom)
+plt.scatter(data['Sqft'], data['Bedroom'], c=data['Cluster'], cmap='rainbow')
+plt.xlabel('Sqft')
+plt.ylabel('Bedroom')
+plt.title('Clustered Houses')
+plt.show()
